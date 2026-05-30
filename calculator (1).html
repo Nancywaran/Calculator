@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Calc — Sowmiya</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Playfair+Display:ital@1&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #1a1f1a;
+      --surface: #222820;
+      --card: #2a3028;
+      --moss: #5a8a4a;
+      --sage: #7db06a;
+      --mist: #b8d4a8;
+      --cream: #f0ede6;
+      --bark: #3a2e1e;
+      --gold: #c8a85a;
+      --red: #c85a5a;
+      --text: #e8f0e0;
+      --muted: #6a806a;
+    }
+
+    body {
+      background: var(--bg);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Outfit', sans-serif;
+      overflow: hidden;
+    }
+
+    /* ── BACKGROUND ── */
+    .bg-decor {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .bg-circle {
+      position: absolute;
+      border-radius: 50%;
+    }
+
+    .bc1 {
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(90,138,74,0.15), transparent 70%);
+      top: -100px; left: -100px;
+    }
+
+    .bc2 {
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(200,168,90,0.08), transparent 70%);
+      bottom: -80px; right: -80px;
+    }
+
+    .leaf-decor {
+      position: absolute;
+      font-size: 28px;
+      opacity: 0.12;
+    }
+
+    /* ── CALCULATOR ── */
+    .calc-wrapper {
+      position: relative;
+      z-index: 1;
+    }
+
+    .calc-title {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .calc-title span {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: 15px;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+    }
+
+    .calculator {
+      background: var(--card);
+      border-radius: 28px;
+      padding: 24px;
+      width: 320px;
+      box-shadow:
+        0 40px 80px rgba(0,0,0,0.5),
+        0 0 0 1px rgba(90,138,74,0.15),
+        inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    /* ── DISPLAY ── */
+    .display {
+      background: var(--surface);
+      border-radius: 18px;
+      padding: 20px 22px 16px;
+      margin-bottom: 20px;
+      min-height: 110px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: flex-end;
+      border: 1px solid rgba(90,138,74,0.12);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .display::before {
+      content: '🌿';
+      position: absolute;
+      top: 12px; left: 16px;
+      font-size: 16px;
+      opacity: 0.4;
+    }
+
+    .display-expr {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 8px;
+      min-height: 18px;
+      letter-spacing: 0.04em;
+      word-break: break-all;
+      text-align: right;
+    }
+
+    .display-main {
+      font-size: 42px;
+      font-weight: 300;
+      color: var(--text);
+      letter-spacing: -1px;
+      line-height: 1;
+      word-break: break-all;
+      text-align: right;
+      transition: font-size 0.2s;
+    }
+
+    .display-main.small { font-size: 28px; }
+
+    /* ── BUTTONS ── */
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    .btn {
+      height: 64px;
+      border: none;
+      border-radius: 16px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 18px;
+      font-weight: 400;
+      cursor: pointer;
+      transition: all 0.12s ease;
+      position: relative;
+      overflow: hidden;
+      outline: none;
+    }
+
+    .btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0);
+      transition: background 0.12s;
+      border-radius: 16px;
+    }
+
+    .btn:active::after { background: rgba(255,255,255,0.08); }
+    .btn:active { transform: scale(0.94); }
+
+    /* Number buttons */
+    .btn-num {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.05);
+      font-weight: 500;
+    }
+
+    .btn-num:hover { background: #2e3830; border-color: rgba(90,138,74,0.2); }
+
+    /* Operator buttons */
+    .btn-op {
+      background: rgba(90,138,74,0.15);
+      color: var(--sage);
+      border: 1px solid rgba(90,138,74,0.2);
+      font-size: 20px;
+    }
+
+    .btn-op:hover { background: rgba(90,138,74,0.25); }
+
+    /* Equals */
+    .btn-eq {
+      background: var(--moss);
+      color: var(--cream);
+      font-size: 22px;
+      font-weight: 600;
+      box-shadow: 0 4px 20px rgba(90,138,74,0.35);
+    }
+
+    .btn-eq:hover { background: var(--sage); box-shadow: 0 6px 24px rgba(90,138,74,0.45); }
+
+    /* Clear */
+    .btn-clear {
+      background: rgba(200,90,90,0.12);
+      color: var(--red);
+      border: 1px solid rgba(200,90,90,0.15);
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+    }
+
+    .btn-clear:hover { background: rgba(200,90,90,0.22); }
+
+    /* Special */
+    .btn-special {
+      background: rgba(200,168,90,0.1);
+      color: var(--gold);
+      border: 1px solid rgba(200,168,90,0.15);
+      font-size: 15px;
+    }
+
+    .btn-special:hover { background: rgba(200,168,90,0.2); }
+
+    /* Zero spans 2 cols */
+    .btn-zero { grid-column: span 2; border-radius: 20px; }
+
+    /* ── FOOTER ── */
+    .calc-footer {
+      text-align: center;
+      margin-top: 18px;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+    }
+
+    /* ── ERROR SHAKE ── */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-6px); }
+      40% { transform: translateX(6px); }
+      60% { transform: translateX(-4px); }
+      80% { transform: translateX(4px); }
+    }
+
+    .shake { animation: shake 0.35s ease; }
+  </style>
+</head>
+<body>
+
+<div class="bg-decor">
+  <div class="bg-circle bc1"></div>
+  <div class="bg-circle bc2"></div>
+  <div class="leaf-decor" style="top:10%;left:5%">🌿</div>
+  <div class="leaf-decor" style="top:20%;right:8%">🍃</div>
+  <div class="leaf-decor" style="bottom:15%;left:10%">🌱</div>
+  <div class="leaf-decor" style="bottom:25%;right:5%">🍀</div>
+</div>
+
+<div class="calc-wrapper">
+  <div class="calc-title">
+    <span>nature calc 🌿</span>
+  </div>
+
+  <div class="calculator">
+    <div class="display" id="display">
+      <div class="display-expr" id="expr"></div>
+      <div class="display-main" id="main">0</div>
+    </div>
+
+    <div class="buttons">
+      <!-- Row 1 -->
+      <button class="btn btn-clear" onclick="clearAll()">AC</button>
+      <button class="btn btn-special" onclick="toggleSign()">+/-</button>
+      <button class="btn btn-special" onclick="percentage()">%</button>
+      <button class="btn btn-op" onclick="setOp('/')">÷</button>
+
+      <!-- Row 2 -->
+      <button class="btn btn-num" onclick="input('7')">7</button>
+      <button class="btn btn-num" onclick="input('8')">8</button>
+      <button class="btn btn-num" onclick="input('9')">9</button>
+      <button class="btn btn-op" onclick="setOp('*')">×</button>
+
+      <!-- Row 3 -->
+      <button class="btn btn-num" onclick="input('4')">4</button>
+      <button class="btn btn-num" onclick="input('5')">5</button>
+      <button class="btn btn-num" onclick="input('6')">6</button>
+      <button class="btn btn-op" onclick="setOp('-')">−</button>
+
+      <!-- Row 4 -->
+      <button class="btn btn-num" onclick="input('1')">1</button>
+      <button class="btn btn-num" onclick="input('2')">2</button>
+      <button class="btn btn-num" onclick="input('3')">3</button>
+      <button class="btn btn-op" onclick="setOp('+')">+</button>
+
+      <!-- Row 5 -->
+      <button class="btn btn-num btn-zero" onclick="input('0')">0</button>
+      <button class="btn btn-num" onclick="inputDot()">.</button>
+      <button class="btn btn-eq" onclick="calculate()">=</button>
+    </div>
+  </div>
+
+  <div class="calc-footer">made by sowmiya 🌱</div>
+</div>
+
+<script>
+  let current = '0';
+  let previous = null;
+  let operator = null;
+  let shouldReset = false;
+
+  const mainEl = document.getElementById('main');
+  const exprEl = document.getElementById('expr');
+  const display = document.getElementById('display');
+
+  function updateDisplay() {
+    mainEl.textContent = current;
+    mainEl.className = 'display-main' + (current.length > 9 ? ' small' : '');
+  }
+
+  function input(val) {
+    if (shouldReset) {
+      current = val;
+      shouldReset = false;
+    } else {
+      if (current === '0') current = val;
+      else if (current.length < 12) current += val;
+    }
+    updateDisplay();
+  }
+
+  function inputDot() {
+    if (shouldReset) { current = '0.'; shouldReset = false; updateDisplay(); return; }
+    if (!current.includes('.')) current += '.';
+    updateDisplay();
+  }
+
+  function getSymbol(op) {
+    if (op === '*') return '×';
+    if (op === '/') return '÷';
+    if (op === '-') return '−';
+    return '+';
+  }
+
+  function setOp(op) {
+    if (operator !== null && !shouldReset) {
+      doCalc();
+    }
+    previous = parseFloat(current);
+    operator = op;
+    shouldReset = true;
+    exprEl.textContent = previous + ' ' + getSymbol(op);
+    updateDisplay();
+  }
+
+  function doCalc() {
+    if (operator === null || previous === null) return;
+    const a = previous;
+    const b = parseFloat(current);
+    let result = 0;
+    if (operator === '+') result = a + b;
+    else if (operator === '-') result = a - b;
+    else if (operator === '*') result = a * b;
+    else if (operator === '/') {
+      if (b === 0) { current = 'Error'; operator = null; previous = null; updateDisplay(); return; }
+      result = a / b;
+    }
+    result = parseFloat(result.toFixed(10));
+    current = String(result);
+  }
+
+  function calculate() {
+    if (operator === null || previous === null) return;
+    const b = parseFloat(current);
+    exprEl.textContent = previous + ' ' + getSymbol(operator) + ' ' + b + ' =';
+    doCalc();
+    operator = null;
+    previous = null;
+    shouldReset = true;
+    updateDisplay();
+  }
+
+  function clearAll() {
+    current = '0';
+    previous = null;
+    operator = null;
+    shouldReset = false;
+    exprEl.textContent = '';
+    updateDisplay();
+  }
+
+  function toggleSign() {
+    if (current !== 'Error') {
+      current = String(parseFloat(current) * -1);
+      updateDisplay();
+    }
+  }
+
+  function percentage() {
+    if (current !== 'Error') {
+      current = String(parseFloat(current) / 100);
+      updateDisplay();
+    }
+  }
+
+  function shake() {
+    display.classList.remove('shake');
+    void display.offsetWidth;
+    display.classList.add('shake');
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key >= '0' && e.key <= '9') input(e.key);
+    else if (e.key === '.') inputDot();
+    else if (e.key === '+') setOp('+');
+    else if (e.key === '-') setOp('-');
+    else if (e.key === '*') setOp('*');
+    else if (e.key === '/') { e.preventDefault(); setOp('/'); }
+    else if (e.key === 'Enter' || e.key === '=') calculate();
+    else if (e.key === 'Escape') clearAll();
+    else if (e.key === 'Backspace') {
+      if (current.length > 1) current = current.slice(0, -1);
+      else current = '0';
+      updateDisplay();
+    }
+  });
+</script>
+
+</body>
+</html>
